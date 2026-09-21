@@ -336,21 +336,10 @@ public final class PhoneNumberUtility {
     public static func defaultMetadataCallback() throws -> Data? {
         #if os(Android)
         if !isJNIInitialized {
-            let resourceDirectoryName = "PhoneNumberKit_PhoneNumberKit.resources"
-            let metadataFileName = "PhoneNumberMetadata.json"
-            let currentDirectoryURL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true)
-            let executableDirectoryURL = URL(fileURLWithPath: CommandLine.arguments[0], isDirectory: false)
-                .deletingLastPathComponent()
-            let candidateURLs = [
-                currentDirectoryURL,
-                executableDirectoryURL
-            ].map { $0.appendingPathComponent(resourceDirectoryName).appendingPathComponent(metadataFileName) }
-
-            for candidateURL in candidateURLs where FileManager.default.fileExists(atPath: candidateURL.path) {
-                return try Data(contentsOf: candidateURL)
+            guard let jsonURL = Foundation.Bundle.module.url(forResource: "PhoneNumberMetadata", withExtension: "json") else {
+                throw PhoneNumberError.metadataNotFound
             }
-
-            throw PhoneNumberError.metadataNotFound
+            return try Data(contentsOf: jsonURL)
         }
 
         try? AssetURLProtocol.register()
